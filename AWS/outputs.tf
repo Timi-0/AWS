@@ -1,14 +1,12 @@
 #-----root/output.tf----
 
-#--------storage output.tf-----
-
-output "Bucket Name" {
-  value = "${module.storage.bucketname}"
-}
-
 #------Networking Outputs -----
 output "Public Subnets" {
   value = "${join(", ", module.networking.public_subnets)}"
+}
+
+output "Private Subnets" {
+  value = "${join(", ", module.networking.private_subnets)}"
 }
 
 output "Subnets IPs" {

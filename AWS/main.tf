@@ -1,20 +1,7 @@
 provider "aws" {
   region = "${var.aws_region}"
-}
-
-terraform {
-  backend "s3" {
-    bucket = "la-terraform-state-200"
-    key = "terraform/terraform.tfstate"
-    region = "us-west-2"
-  }
-}
-
-# Deploy Sortage Resources
-
-module "storage" {
-  source       = "./storage"
-  project_name = "${var.project_name}"
+  secret_key = "${var.secret_key}"
+  access_key = "${var.access_key}"
 }
 
 # Deploy Networking Resources
@@ -23,17 +10,17 @@ module "networking" {
   source       = "./networking"
   vpc_cidr     = "${var.vpc_cidr}"
   public_cidrs = "${var.public_cidrs}"
+  private_cidrs = "${var.private_cidrs}"
   accessip     = "${var.accessip}"
 }
 
 # Deploy Compute Resources
 module "compute" {
   source          = "./compute"
-  key_name        = "${var.key_name}"
-  public_key_path = "${var.public_key_path}"
   instance_count  = "${var.instance_count}"
   instance_type   = "${var.server_instance_type}"
   subnet_ips      = "${module.networking.subnet_ips}"
   security_group  = "${module.networking.public_sg}"
-  subnets         = "${module.networking.public_subnets}"
+  publicsubnets   = "${module.networking.public_subnets}"
+  privatesubnets  = ["$(module.networking.private_subnets}"]
 }

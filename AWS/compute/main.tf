@@ -14,10 +14,6 @@ data "aws_ami" "server_ami" {
   }
 }
 
-resource "aws_key_pair" "tf_auth" {
-  key_name   = "${var.key_name}"
-  public_key = "${file(var.public_key_path)}"
-}
 
 data "template_file" "user-init" {
   count    = 2
@@ -28,17 +24,32 @@ data "template_file" "user-init" {
   }
 }
 
-resource "aws_instance" "tf_server" {
+resource "aws_instance" "webserver" {
   count         = "${var.instance_count}"
   instance_type = "${var.instance_type}"
   ami           = "${data.aws_ami.server_ami.id}"
 
   tags = {
-    Name = "tf_server-${count.index + 1}"
+    Name = "webserver-${count.index + 1}"
   }
 
-  key_name               = "${aws_key_pair.tf_auth.id}"
+  key_name               = "NewStart"
   vpc_security_group_ids = ["${var.security_group}"]
-  subnet_id              = "${element(var.subnets, count.index)}"
+  subnet_id              = "${element(var.publicsubnets, count.index)}"
   user_data              = "${data.template_file.user-init.*.rendered[count.index]}"
 }
+
+resource "aws_instance" "appserver" {
+  count         = "${var.instance_count}"
+  instance_type = "${var.instance_type}"
+  ami           = "${data.aws_ami.server_ami.id}"
+
+  tags = {
+    Name = "appserver-${count.index + 1}"
+  }
+
+  key_name               = "NewStart"
+  vpc_security_group_ids = ["${var.security_group}"]
+  subnet_id              = "${element(var.privatesubnets, count.index)}"
+}
+
